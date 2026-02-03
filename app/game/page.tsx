@@ -10,6 +10,16 @@ import PlayerCard from '@/components/player-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
+function getScoreFeedback(score: number): { message: string; color: string; emoji: string } {
+    if (score >= 4500) return { message: "Perfect!", color: "text-green-500", emoji: "🎯" };
+    if (score >= 4000) return { message: "Excellent!", color: "text-green-400", emoji: "🌟" };
+    if (score >= 3000) return { message: "Great!", color: "text-blue-500", emoji: "👏" };
+    if (score >= 2000) return { message: "Good!", color: "text-blue-400", emoji: "👍" };
+    if (score >= 1000) return { message: "Not Bad!", color: "text-yellow-500", emoji: "😊" };
+    if (score >= 500) return { message: "Could be better", color: "text-orange-500", emoji: "🤔" };
+    return { message: "Keep trying!", color: "text-red-500", emoji: "💪" };
+  }
+
 // Dynamically import map to avoid SSR issues with Leaflet
 const GameMap = dynamic(() => import('@/components/game-map'), {
   ssr: false,
@@ -195,27 +205,37 @@ function GameContent() {
                 )}
 
 {gameState === 'result' && (
-  <Card className="bg-background/95 backdrop-blur-sm shadow-2xl">
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Distance</p>
-                        <p className="text-3xl font-bold">{distance.toLocaleString()} km</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Score</p>
-                        <p className="text-4xl font-bold text-primary">{score.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">out of 5,000</p>
-                      </div>
-                      <Button onClick={handleNextPlayer} className="w-full">
-                        {mode === 'quiz' && currentRound < totalRounds
-                          ? `Next Player (${currentRound + 1}/${totalRounds})`
-                          : mode === 'quiz'
-                          ? 'See Results'
-                          : 'Next Player'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
+  <Card className="bg-background/95 backdrop-blur-sm shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+    <CardContent className="pt-6 space-y-4">
+      {/* Score Feedback Message */}
+      <div className="text-center animate-in zoom-in duration-700 delay-300">
+        <div className={`text-5xl mb-2 ${getScoreFeedback(score).emoji}`}>
+          {getScoreFeedback(score).emoji}
+        </div>
+        <h3 className={`text-3xl font-bold ${getScoreFeedback(score).color} animate-pulse`}>
+          {getScoreFeedback(score).message}
+        </h3>
+      </div>
+
+      <div className="text-center animate-in fade-in duration-500 delay-500">
+        <p className="text-sm text-muted-foreground">Distance</p>
+        <p className="text-3xl font-bold">{distance.toLocaleString()} km</p>
+      </div>
+      <div className="text-center animate-in fade-in duration-500 delay-700">
+        <p className="text-sm text-muted-foreground">Score</p>
+        <p className="text-4xl font-bold text-primary">{score.toLocaleString()}</p>
+        <p className="text-xs text-muted-foreground">out of 5,000</p>
+      </div>
+      <Button onClick={handleNextPlayer} className="w-full animate-in fade-in duration-500 delay-1000">
+        {mode === 'quiz' && currentRound < totalRounds
+          ? `Next Player (${currentRound + 1}/${totalRounds})`
+          : mode === 'quiz'
+          ? 'See Results'
+          : 'Next Player'}
+      </Button>
+    </CardContent>
+  </Card>
+)}
               </>
             ) : (
               // Quiz Results
