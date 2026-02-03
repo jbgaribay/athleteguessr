@@ -4,6 +4,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "import-players": "tsx scripts/import-nfl-players.ts",
+    "import-players-v2": "tsx scripts/import-nfl-players-v2.ts",
+    "seed-curated": "tsx scripts/seed-curated-players.ts",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -30,11 +33,13 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.20",
+    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

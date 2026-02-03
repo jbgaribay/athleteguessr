@@ -9,6 +9,7 @@ import { calculateDistance, calculateScore } from '@/lib/gameUtils';
 import PlayerCard from '@/components/player-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/client';
 
 function getScoreFeedback(score: number): { message: string; color: string; emoji: string } {
     if (score >= 4500) return { message: "Perfect!", color: "text-green-500", emoji: "🎯" };
@@ -52,17 +53,51 @@ function GameContent() {
   const [quizPlayers, setQuizPlayers] = useState<Player[]>([]);
   const totalRounds = 5;
 
-  // Pick random player(s) on mount
-  useEffect(() => {
-    if (mode === 'quiz' && quizPlayers.length === 0) {
-      // Pick 5 random players for quiz
-      const shuffled = [...mockPlayers].sort(() => Math.random() - 0.5);
-      const selected = shuffled.slice(0, totalRounds);
-      setQuizPlayers(selected);
-      setCurrentPlayer(selected[0]);
-    } else if (mode === 'single' && !currentPlayer) {
-      setCurrentPlayer(mockPlayers[Math.floor(Math.random() * mockPlayers.length)]);
+// Pick random player(s) on mount
+useEffect(() => {
+    async function loadPlayers() {
+      const supabase = createClient();
+      
+      if (mode === 'quiz' && quizPlayers.length === 0) {
+        // Fetch 5 random NFL players for quiz
+        const { data, error } = await supabase
+          .from('players')
+          .select('*')
+          .eq('sport', 'nfl')
+          .limit(200); // Get a pool to randomize from
+        
+        if (error) {
+          console.error('Error fetching players:', error);
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          const shuffled = [...data].sort(() => Math.random() - 0.5);
+          const selected = shuffled.slice(0, totalRounds);
+          setQuizPlayers(selected);
+          setCurrentPlayer(selected[0]);
+        }
+      } else if (mode === 'single' && !currentPlayer) {
+        // Fetch one random NFL player for single mode
+        const { data, error } = await supabase
+          .from('players')
+          .select('*')
+          .eq('sport', 'nfl')
+          .limit(100); // Get a pool to randomize from
+        
+        if (error) {
+          console.error('Error fetching players:', error);
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          const randomPlayer = data[Math.floor(Math.random() * data.length)];
+          setCurrentPlayer(randomPlayer);
+        }
+      }
     }
+    
+    loadPlayers();
   }, [mode, currentPlayer, quizPlayers]);
 
   if (!currentPlayer) {
@@ -118,17 +153,25 @@ function GameContent() {
         setGameState('completed');
       }
     } else {
-      // Single mode - get random player
-      let newPlayer = currentPlayer;
-      while (newPlayer.id === currentPlayer.id && mockPlayers.length > 1) {
-        newPlayer = mockPlayers[Math.floor(Math.random() * mockPlayers.length)];
-      }
+      // Single mode - fetch new random player from database
+      const supabase = createClient();
       
-      setCurrentPlayer(newPlayer);
-      setGameState('guessing');
-      setGuessLocation(null);
-      setDistance(0);
-      setScore(0);
+      supabase
+        .from('players')
+        .select('*')
+        .eq('sport', 'nfl')
+        .neq('id', currentPlayer.id) // Exclude current player
+        .limit(50)
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            const randomPlayer = data[Math.floor(Math.random() * data.length)];
+            setCurrentPlayer(randomPlayer);
+            setGameState('guessing');
+            setGuessLocation(null);
+            setDistance(0);
+            setScore(0);
+          }
+        });
     }
   };
 
