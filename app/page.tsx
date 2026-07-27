@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default async function Index() {
+export default function Index() {
   return (
     <div className="flex-1 w-full flex flex-col gap-20 items-center">
       <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
@@ -21,11 +21,19 @@ export default async function Index() {
             Test your knowledge by guessing where NFL players were born. 
             Click on the map and see how close you can get!
           </p>
-          <Link href="/game">
-            <Button size="lg" className="text-lg px-8 py-6">
-              Start Playing
-            </Button>
-          </Link>
+          
+          <div className="flex gap-4 mt-4">
+            <Link href="/game?mode=single">
+              <Button size="lg" className="text-lg px-8 py-6">
+                Single Player
+              </Button>
+            </Link>
+            <Link href="/game?mode=quiz">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+                Quiz Mode (5 Players)
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
