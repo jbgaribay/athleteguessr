@@ -68,3 +68,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Ensure map container doesn't overlap floating UI */
+.leaflet-container {
+  z-index: 0 !important;
+}
+
+.leaflet-pane {
+  z-index: auto !important;
+}

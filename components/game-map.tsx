@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -31,12 +31,62 @@ function MapClickHandler({ onGuess, disabled }: { onGuess: (lat: number, lng: nu
   return null;
 }
 
+function FitBoundsOnReveal({ guessLocation, actualLocation, showResult }: { guessLocation: [number, number] | null; actualLocation: [number, number] | null; showResult: boolean }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (showResult && guessLocation && actualLocation) {
+      // Fit map to show both markers with animation
+      const bounds = L.latLngBounds([guessLocation, actualLocation]);
+      map.fitBounds(bounds, { 
+        padding: [100, 100],
+        animate: true,
+        duration: 1
+      });
+    }
+  }, [showResult, guessLocation, actualLocation, map]);
+
+  return null;
+}
+
 export default function GameMap({ onGuess, guessLocation, actualLocation, showResult }: GameMapProps) {
   const [mounted, setMounted] = useState(false);
+  const [animatedLine, setAnimatedLine] = useState<[number, number][]>([]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Animate line drawing
+  useEffect(() => {
+    if (showResult && guessLocation && actualLocation) {
+      // Reset line
+      setAnimatedLine([]);
+      
+      // Animate line over 1 second
+      const steps = 30;
+      let currentStep = 0;
+
+      const interval = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        
+        const lat = guessLocation[0] + (actualLocation[0] - guessLocation[0]) * progress;
+        const lng = guessLocation[1] + (actualLocation[1] - guessLocation[1]) * progress;
+        
+        setAnimatedLine([[guessLocation[0], guessLocation[1]], [lat, lng]]);
+
+        if (currentStep >= steps) {
+          clearInterval(interval);
+          setAnimatedLine([guessLocation, actualLocation]);
+        }
+      }, 1000 / steps);
+
+      return () => clearInterval(interval);
+    } else {
+      setAnimatedLine([]);
+    }
+  }, [showResult, guessLocation, actualLocation]);
 
   if (!mounted) {
     return <div className="w-full h-full bg-gray-200 animate-pulse" />;
@@ -74,6 +124,7 @@ export default function GameMap({ onGuess, guessLocation, actualLocation, showRe
       />
       
       <MapClickHandler onGuess={onGuess} disabled={showResult} />
+      <FitBoundsOnReveal guessLocation={guessLocation} actualLocation={actualLocation} showResult={showResult} />
       
       {guessLocation && (
         <Marker position={guessLocation} icon={guessIcon} />
@@ -82,9 +133,9 @@ export default function GameMap({ onGuess, guessLocation, actualLocation, showRe
       {showResult && actualLocation && (
         <>
           <Marker position={actualLocation} icon={actualIcon} />
-          {guessLocation && (
+          {animatedLine.length === 2 && (
             <Polyline
-              positions={[guessLocation, actualLocation]}
+              positions={animatedLine}
               color="blue"
               weight={3}
               opacity={0.7}
