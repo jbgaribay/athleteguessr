@@ -38,19 +38,19 @@ export default function Index() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           <div className="flex flex-col gap-2 p-6 border rounded-lg">
-            <h3 className="font-semibold text-lg">Click to Guess</h3>
+            <h3 className="font-semibold text-lg">🗺️ Click to Guess</h3>
             <p className="text-sm text-muted-foreground">
               Click anywhere on the map to place your guess for where the player was born.
             </p>
           </div>
           <div className="flex flex-col gap-2 p-6 border rounded-lg">
-            <h3 className="font-semibold text-lg">Distance Scoring</h3>
+            <h3 className="font-semibold text-lg">📏 Distance Scoring</h3>
             <p className="text-sm text-muted-foreground">
               Get up to 5,000 points based on how close your guess is to the actual birthplace.
             </p>
           </div>
           <div className="flex flex-col gap-2 p-6 border rounded-lg">
-            <h3 className="font-semibold text-lg">NFL Players</h3>
+            <h3 className="font-semibold text-lg">🏈 NFL Players</h3>
             <p className="text-sm text-muted-foreground">
               Learn fun facts about where legendary NFL players came from.
             </p>
